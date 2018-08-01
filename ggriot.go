@@ -11,6 +11,11 @@ import (
 )
 
 var (
+	// ShortLimit is how many request in one second.
+	ShortLimit int64 = 20
+	// LongLimit is how many request in two minutes.
+	LongLimit int64 = 200
+
 	// apikey is APIkey for Riot's API. Not exported to prevent leaks.
 	apikey string
 
@@ -82,7 +87,14 @@ func SetAPIKey(key string) {
 	apikey = "?api_key=" + key
 }
 
+// apiRequest is the function that does all the heavy lifting.
+// It also employs a rate limiter that can be changed, depending on the limits of the api key.
+// This drops the connections if the limit is reached, however in the future there maybe an option to use a queue system.
 func apiRequest(request string, s interface{}) (err error) {
+	if CheckRateLimit() == false {
+		return errors.New("rate limit reached")
+	}
+
 	req, err := http.Get(request)
 	if err != nil {
 		return errors.New("error requesting, " + err.Error())
