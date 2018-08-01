@@ -78,7 +78,6 @@ func SetAPIKey(key string) {
 }
 
 func apiRequest(request string, s interface{}) (err error) {
-
 	req, err := http.Get(request)
 	if err != nil {
 		return errors.New("error requesting, " + err.Error())
