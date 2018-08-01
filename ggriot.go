@@ -1,10 +1,11 @@
 package ggriot
 
 import (
-	"net/http"
-	"github.com/pkg/errors"
-	"github.com/json-iterator/go"
 	"io/ioutil"
+	"net/http"
+
+	"github.com/json-iterator/go"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -73,14 +74,14 @@ var (
 // SetAPIKey will set the api key for the global session.
 func SetAPIKey(key string) {
 	// apikey is the global api key.
-	apikey = "?api_key="+key
+	apikey = "?api_key=" + key
 }
 
-func apiRequest(request string, s interface{}) (err error){
+func apiRequest(request string, s interface{}) (err error) {
 
 	req, err := http.Get(request)
 	if err != nil {
-		return errors.New("error requesting, "+err.Error())
+		return errors.New("error requesting, " + err.Error())
 	}
 	defer req.Body.Close()
 
@@ -96,6 +97,5 @@ func apiRequest(request string, s interface{}) (err error){
 	if err != nil {
 		return
 	}
+	return
 }
-
-

@@ -36,7 +36,8 @@ type ActiveGame struct {
 	} `json:"bannedChampions"`
 }
 
-func GetActiveGame(region string, summoner string) (err error, game *ActiveGame) {
+// GetActiveGame will get the active game from the supplied id.
+func GetActiveGame(region string, summoner string) (game *ActiveGame, err error) {
 	err = apiRequest(region+"."+Base+BaseSpectator+"/active-games/by-summoner/"+summoner+apikey, game)
 	if err != nil {
 		return
