@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"strconv"
+
 	"github.com/json-iterator/go"
 	"github.com/pkg/errors"
 )
@@ -85,7 +87,7 @@ func apiRequest(request string, s interface{}) (err error) {
 	defer req.Body.Close()
 
 	if req.StatusCode != http.StatusOK {
-		return // Add api codes here
+		return errors.New("status code " + strconv.Itoa(req.StatusCode)) // Add api codes here
 	}
 
 	body, err := ioutil.ReadAll(req.Body)
