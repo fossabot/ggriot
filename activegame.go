@@ -38,9 +38,15 @@ type ActiveGame struct {
 
 // GetActiveGame will get the active game from the supplied id.
 func GetActiveGame(region string, summoner string) (ag *ActiveGame, err error) {
+	if CheckKeySet() == false {
+		return nil, errNoAPI
+	}
+
 	err = apiRequest("https://"+region+"."+Base+BaseSpectator+"/active-games/by-summoner/"+summoner+apikey, &ag)
+
 	if err != nil {
 		return nil, err
 	}
+
 	return ag, err
 }

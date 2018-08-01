@@ -71,6 +71,9 @@ var (
 	LA1 = "LA1"
 	// LA2 is the server code for the second Latin America server.
 	LA2 = "LA2"
+
+	// NoAPIKeySet is the error that is returned if no API key was set.
+	errNoAPI = errors.New("ggriot: No API key was set")
 )
 
 // SetAPIKey will set the api key for the global session.
@@ -84,10 +87,23 @@ func apiRequest(request string, s interface{}) (err error) {
 	if err != nil {
 		return errors.New("error requesting, " + err.Error())
 	}
+
 	defer req.Body.Close()
 
 	if req.StatusCode != http.StatusOK {
-		return errors.New("status code " + strconv.Itoa(req.StatusCode)) // Add api codes here
+		body, er := ioutil.ReadAll(req.Body)
+		if er != nil {
+			return errors.New("ggriot: " + er.Error())
+		}
+
+		var jsonError JSONError
+
+		er = jsoniter.Unmarshal(body, &jsonError)
+		if er != nil {
+			return errors.New("ggriot: " + er.Error())
+		}
+
+		return errors.New("ggriot: HTTP Status: " + strconv.Itoa(jsonError.Status.StatusCode) + " - " + jsonError.Status.Message)
 	}
 
 	body, err := ioutil.ReadAll(req.Body)
@@ -99,4 +115,9 @@ func apiRequest(request string, s interface{}) (err error) {
 		return
 	}
 	return
+}
+
+// CheckKeySet checks if an API key was set.
+func CheckKeySet() bool {
+	return !(apikey == "")
 }
