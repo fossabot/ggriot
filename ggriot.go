@@ -6,11 +6,15 @@ import (
 
 	"strconv"
 
+	"time"
+
 	"github.com/json-iterator/go"
 	"github.com/pkg/errors"
 )
 
 var (
+	// IgnoreLimit can be set to true to disable
+	IgnoreLimit = false
 	// ShortLimit is how many request in one second.
 	ShortLimit int64 = 20
 	// LongLimit is how many request in two minutes.
@@ -41,7 +45,7 @@ var (
 	BaseSpectator = "/spectator/v3"
 
 	// BaseSummoner is the path for summoner information api calls.
-	BaseSummoner = "/summoner/v3"
+	BaseSummoner = "/summoner/v3/summoners"
 
 	// BaseTPC is the path for using third party codes to verify summoners via api calls.
 	BaseTPC = "/platform/v3/third-party-code/by-summoner"
@@ -77,6 +81,13 @@ var (
 	// LA2 is the server code for the second Latin America server.
 	LA2 = "LA2"
 
+	// Ranked5s is Solo/Duo ranked.
+	Ranked5s = "RANKED_SOLO_5x5"
+	// Flex3s is flex for twisted treeline
+	Flex3s = "RANKED_FLEX_TT"
+	// Flex5s is flex for summoners rift.
+	Flex5s = "RANKED_FLEX_SR"
+
 	// NoAPIKeySet is the error that is returned if no API key was set.
 	errNoAPI = errors.New("ggriot: No API key was set")
 )
@@ -84,26 +95,42 @@ var (
 // SetAPIKey will set the api key for the global session.
 func SetAPIKey(key string) {
 	// apikey is the global api key.
-	apikey = "?api_key=" + key
+	apikey = key
 }
 
 // apiRequest is the function that does all the heavy lifting.
 // It also employs a rate limiter that can be changed, depending on the limits of the api key.
 // This drops the connections if the limit is reached, however in the future there maybe an option to use a queue system.
 func apiRequest(request string, s interface{}) (err error) {
+	if CheckKeySet() == false {
+		return errNoAPI
+	}
+
 	if CheckRateLimit() == false {
 		return errors.New("rate limit reached")
 	}
 
-	req, err := http.Get(request)
-	if err != nil {
-		return errors.New("error requesting, " + err.Error())
+	ggriotClient := http.Client{
+		Timeout: time.Second * 2,
 	}
 
-	defer req.Body.Close()
+	req, err := http.NewRequest(http.MethodGet, request, nil)
+	if err != nil {
+		return err
+	}
 
-	if req.StatusCode != http.StatusOK {
-		body, er := ioutil.ReadAll(req.Body)
+	req.Header.Set("User-Agent", "ggriot")
+	req.Header.Set("X-Riot-Token", apikey)
+
+	res, err := ggriotClient.Do(req)
+	if err != nil {
+		return errors.New(err.Error())
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		body, er := ioutil.ReadAll(res.Body)
 		if er != nil {
 			return errors.New("ggriot: " + er.Error())
 		}
@@ -118,7 +145,7 @@ func apiRequest(request string, s interface{}) (err error) {
 		return errors.New("ggriot: HTTP Status: " + strconv.Itoa(jsonError.Status.StatusCode) + " - " + jsonError.Status.Message)
 	}
 
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return // Add return error here.
 	}
@@ -132,4 +159,17 @@ func apiRequest(request string, s interface{}) (err error) {
 // CheckKeySet checks if an API key was set.
 func CheckKeySet() bool {
 	return !(apikey == "")
+}
+
+// DisableRateLimiting will stop the limiter.
+func DisableRateLimiting() {
+	close(StopRateLimit)
+}
+
+// EnableRateLimiting will restart the rate limiter if it was stopped.
+func EnableRateLimiting() {
+	if RateLimitingActive == false {
+		go ShortRateTime()
+		go LongRateTime()
+	}
 }
