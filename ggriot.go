@@ -1,7 +1,6 @@
 package ggriot
 
 import (
-	"io/ioutil"
 	"net/http"
 
 	"strconv"
@@ -130,14 +129,9 @@ func apiRequest(request string, s interface{}) (err error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		body, er := ioutil.ReadAll(res.Body)
-		if er != nil {
-			return errors.New("ggriot: " + er.Error())
-		}
-
 		var jsonError JSONError
 
-		er = jsoniter.Unmarshal(body, &jsonError)
+		er := jsoniter.NewDecoder(res.Body).Decode(&jsonError)
 		if er != nil {
 			return errors.New("ggriot: " + er.Error())
 		}
@@ -145,11 +139,7 @@ func apiRequest(request string, s interface{}) (err error) {
 		return errors.New("ggriot: HTTP Status: " + strconv.Itoa(jsonError.Status.StatusCode) + " - " + jsonError.Status.Message)
 	}
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return // Add return error here.
-	}
-	err = jsoniter.Unmarshal(body, s)
+	err = jsoniter.NewDecoder(res.Body).Decode(&s)
 	if err != nil {
 		return
 	}
