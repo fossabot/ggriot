@@ -1,20 +1,23 @@
 package ggriot
 
 import (
+	"log"
 	"testing"
+
+	"github.com/soowan/ggriot/cache"
 )
 
 func TestActiveGame(t *testing.T) {
-	SetAPIKey("RGAPI-6db8b12d-b073-4192-ae73-6fe228bd48af")
-	_, err := GetActiveGame(NA, "19887289")
-	if err != nil {
-		t.Error("Error testing getting current game,", err)
-	}
+	SetAPIKey("")
+	cache.UseCache()
+	useCache = true
 }
 
-func TestMasteryList(t *testing.T) {
-	_, err := GetMasteryList(NA, "19887289")
+func TestGetActiveGame(t *testing.T) {
+	e, err := GetMasteryList(NA, "21669611")
 	if err != nil {
-		t.Error("Error getting mastery list,", err)
+		t.Error(err)
 	}
+
+	log.Println((*e)[0].PlayerID)
 }

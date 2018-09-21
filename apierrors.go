@@ -1,6 +1,6 @@
 package ggriot
 
-// JSONError is the struct that Riot returns the error codes.
+// JSONError is the json that Riot returns whenever there is an error.
 // This gives us more information that just getting the HTTP Status
 type JSONError struct {
 	Status struct {

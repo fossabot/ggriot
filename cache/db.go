@@ -14,9 +14,18 @@ var CDB *gorm.DB
 
 // UseCache will open a connection to a postgres server that will be used as a cache server.
 func UseCache() (err error) {
-	CDB, err = gorm.Open("postgres", "")
+	CDB, err = gorm.Open("postgres", "postgres", "")
 	if err != nil {
 		return errors.New("ggriot: error opening cache cb, " + err.Error())
 	}
+
+	if CDB.HasTable(LeagueTier{}) == false {
+		CDB.CreateTable(LeagueTier{})
+	}
+
+	if CDB.HasTable(MasteryList{}) == false {
+		CDB.CreateTable(MasteryList{})
+	}
+
 	return nil
 }

@@ -1,46 +1,21 @@
 package ggriot
 
-// LeagueRoster returns everyone in the  tier for the mode requested.
-type LeagueRoster struct {
-	Tier     string `json:"tier"`
-	Queue    string `json:"queue"`
-	LeagueID string `json:"leagueId"`
-	Name     string `json:"name"`
-	Entries  []struct {
-		HotStreak        bool   `json:"hotStreak"`
-		Wins             int    `json:"wins"`
-		Veteran          bool   `json:"veteran"`
-		Losses           int    `json:"losses"`
-		Rank             string `json:"rank"`
-		PlayerOrTeamName string `json:"playerOrTeamName"`
-		Inactive         bool   `json:"inactive"`
-		PlayerOrTeamID   string `json:"playerOrTeamId"`
-		FreshBlood       bool   `json:"freshBlood"`
-		LeaguePoints     int    `json:"leaguePoints"`
-	} `json:"entries"`
-}
+import (
+	"fmt"
+	"log"
+	"time"
 
-// LeaguePosition is what's returned when requesting a players league stats.
-type LeaguePosition []struct {
-	QueueType        string `json:"queueType"`
-	HotStreak        bool   `json:"hotStreak"`
-	Wins             int    `json:"wins"`
-	Veteran          bool   `json:"veteran"`
-	Losses           int    `json:"losses"`
-	PlayerOrTeamID   string `json:"playerOrTeamId"`
-	LeagueName       string `json:"leagueName"`
-	PlayerOrTeamName string `json:"playerOrTeamName"`
-	Inactive         bool   `json:"inactive"`
-	Rank             string `json:"rank"`
-	FreshBlood       bool   `json:"freshBlood"`
-	LeagueID         string `json:"leagueId"`
-	Tier             string `json:"tier"`
-	LeaguePoints     int    `json:"leaguePoints"`
-}
+	"github.com/soowan/ggriot/models"
+
+	"github.com/jinzhu/gorm"
+
+	"github.com/json-iterator/go"
+	"github.com/soowan/ggriot/cache"
+)
 
 // GetChallengers will return all the challengers in the requested queue.
 // Valid queues are, Ranked5s(RANKED_SOLO_5x5), Flex3s(RANKED_FLEX_TT), and Flex5s(RANKED_FLEX_SR)
-func GetChallengers(region string, mode string) (lr *LeagueRoster, err error) {
+func GetChallengers(region string, mode string) (lr *models.LeagueRoster, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseLeague+"/challengerleagues/by-queue/"+mode, &lr)
 	if err != nil {
 		return nil, err
@@ -50,7 +25,7 @@ func GetChallengers(region string, mode string) (lr *LeagueRoster, err error) {
 }
 
 // GetMasters returns the roster of all the players in the Masters tier for requested queue.
-func GetMasters(region string, mode string) (lr *LeagueRoster, err error) {
+func GetMasters(region string, mode string) (lr *models.LeagueRoster, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseLeague+"/masterleagues/by-queue/"+mode, &lr)
 	if err != nil {
 		return nil, err
@@ -61,19 +36,51 @@ func GetMasters(region string, mode string) (lr *LeagueRoster, err error) {
 
 // GetLeague will return the roster of the league requested, via UUID.
 // You can and will get blocked from this call if you provide invalid UUIDs
-func GetLeague(region string, leagueUUID string) (lr *LeagueRoster, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseLeague+"/leagues/"+leagueUUID, &lr)
-	if err != nil {
-		return nil, err
-	}
+func GetLeague(region string, leagueUUID string) (lr *models.LeagueRoster, err error) {
+	switch useCache {
+	case true:
+		var clt cache.LeagueTier
+		if c := cache.CDB.Where("league_id = ?", leagueUUID).First(&clt); c.Error != nil {
+			switch c.Error {
+			case gorm.ErrRecordNotFound:
+				if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/leagues/"+leagueUUID, &lr); err != nil {
+					return &models.LeagueRoster{}, err
+				}
+				go func() {
+					js, er := jsoniter.Marshal(&lr)
+					if er != nil {
+						log.Println("error marshal", er)
+					}
 
+					dbe := cache.LeagueTier{
+						LeagueID: lr.LeagueID,
+						Region:   region,
+						JSON:     string(js),
+					}
+
+					cache.CDB.Create(&dbe)
+				}()
+				return lr, nil
+			default:
+				return &models.LeagueRoster{}, c.Error
+			}
+		}
+		fmt.Println("age of cached entry:", time.Since(clt.CreatedAt))
+		if er := jsoniter.UnmarshalFromString(clt.JSON, &lr); er != nil {
+			log.Println(er)
+			return &models.LeagueRoster{}, er
+		}
+		return lr, nil
+	}
+	if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/leagues/"+leagueUUID, &lr); err != nil {
+		return &models.LeagueRoster{}, err
+	}
 	return lr, nil
 }
 
 // GetPlayerPosition will return the requested players league position in each of the three ranked queues.
-func GetPlayerPosition(region string, summonerID string) (lp *LeaguePosition, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerID, &lp)
-	if err != nil {
+func GetPlayerPosition(region string, summonerID string) (lp *models.LeaguePosition, err error) {
+	if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerID, &lp); err != nil {
 		return nil, err
 	}
 

@@ -1,27 +1,63 @@
 package ggriot
 
-// MasteryList is a slice with every champion and its information in regards to mastery.
-type MasteryList []struct {
-	ChampionLevel                int   `json:"championLevel"`
-	ChestGranted                 bool  `json:"chestGranted"`
-	ChampionPoints               int   `json:"championPoints"`
-	ChampionPointsSinceLastLevel int   `json:"championPointsSinceLastLevel"`
-	PlayerID                     int   `json:"playerId"`
-	ChampionPointsUntilNextLevel int   `json:"championPointsUntilNextLevel"`
-	TokensEarned                 int   `json:"tokensEarned"`
-	ChampionID                   int   `json:"championId"`
-	LastPlayTime                 int64 `json:"lastPlayTime"`
-}
+import (
+	"log"
+	"time"
 
-// MasteryLevel is the total champion mastery.
-type MasteryLevel struct {
-	TotalMastery int
-}
+	"github.com/jinzhu/gorm"
+	"github.com/json-iterator/go"
+	"github.com/pkg/errors"
+	"github.com/soowan/ggriot/cache"
+	"github.com/soowan/ggriot/models"
+)
 
 // GetMasteryList will return a struct with all the summoners champions and mastery exp/level.
-func GetMasteryList(region string, summoner string) (ml *MasteryList, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml)
-	if err != nil {
+func GetMasteryList(region string, summoner string) (ml *models.MasteryList, err error) {
+	if useCache == true {
+		var cc cache.MasteryList
+
+		switch cache.CDB.Where("summoner_id = ?", summoner).First(&cc).Error {
+		case gorm.ErrRecordNotFound:
+			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
+				return ml, err
+			}
+
+			js, er := jsoniter.Marshal(&ml)
+			if er != nil {
+				return ml, er
+			}
+			dbe := cache.MasteryList{
+				SummonerID: (*ml)[0].PlayerID,
+				Region:     region,
+				JSON:       string(js),
+			}
+
+			cache.CDB.Create(&dbe)
+
+			return ml, err
+		case nil:
+			if time.Since(cc.UpdatedAt) > time.Duration(time.Second*5) {
+				log.Println("outdated")
+				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
+					return ml, err
+				}
+
+				js, er := jsoniter.Marshal(&ml)
+				if er != nil {
+					return ml, er
+				}
+
+				cache.CDB.Model(&cc).Update("json", string(js))
+			}
+
+			jsoniter.UnmarshalFromString(cc.JSON, &ml)
+			return ml, nil
+		default:
+			return ml, errors.New("uh unkown error with case i suppose")
+		}
+	}
+
+	if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
 		return ml, err
 	}
 
@@ -29,7 +65,7 @@ func GetMasteryList(region string, summoner string) (ml *MasteryList, err error)
 }
 
 // GetChampionMastery will return a single champion mastery struct
-func GetChampionMastery(region string, summoner string, championID string) (ml *MasteryList, err error) {
+func GetChampionMastery(region string, summoner string, championID string) (ml *models.MasteryList, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner+"/by-champion"+championID+apikey, &ml)
 	if err != nil {
 		return nil, err
@@ -38,7 +74,7 @@ func GetChampionMastery(region string, summoner string, championID string) (ml *
 }
 
 // GetTotalMasteryLevel gets the total mastery level.
-func GetTotalMasteryLevel(region string, summoner string) (ml *MasteryLevel, err error) {
+func GetTotalMasteryLevel(region string, summoner string) (ml *models.MasteryLevel, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml)
 	if err != nil {
 		return nil, err
