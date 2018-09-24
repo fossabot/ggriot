@@ -2,6 +2,8 @@ package ggriot
 
 import "github.com/soowan/ggriot/models"
 
+// TODO: Remove this. (These api calls will be deprecated in october.)
+
 // GetAllChampions will return all the current champions in the game.
 // This isn't affected by API limit rates, however it's good practice to still obey them.
 // However this data isn't exactly all that useful as it still only returns champion IDs.

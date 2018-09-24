@@ -89,9 +89,6 @@ var (
 
 	// NoAPIKeySet is the error that is returned if no API key was set.
 	errNoAPI = errors.New("ggriot: No API key was set")
-
-	// useCache this is checked to see if ggriot should call the postgres db first or skip calling cache.
-	useCache = false
 )
 
 // SetAPIKey will set the api key for the global session.

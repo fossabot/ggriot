@@ -14,9 +14,7 @@ type MasteryList []struct {
 }
 
 // MasteryLevel is the total champion mastery.
-type MasteryLevel struct {
-	TotalMastery int
-}
+type MasteryLevel int
 
 // ChampionsList is used when returning all the current champions.
 type ChampionsList struct {

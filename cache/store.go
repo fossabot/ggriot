@@ -1,21 +1,36 @@
 package cache
 
 import (
+	"errors"
+
 	"github.com/json-iterator/go"
-	"github.com/soowan/ggriot/models"
 )
 
-func StoreMasteryList(s *models.MasteryList, region string) (err error) {
-	js, er := jsoniter.Marshal(&s)
-	if er != nil {
-		return er
-	}
-	dbe := MasteryList{
-		SummonerID: (*s)[0].PlayerID,
-		Region:     region,
-		JSON:       string(js),
+// StoreCall will store the interface into JSON then store that json into the correct table.
+func StoreCall(call string, region string, key string, s interface{}) error {
+	js, err := jsoniter.MarshalToString(&s)
+	if err != nil {
+		return errors.New("ggriot: error marshalling to string, " + err.Error())
 	}
 
-	CDB.Create(&dbe)
+	c := Cached{
+		CallKey: key,
+		JSON:    js,
+	}
+
+	CDB.Table(call + "_" + region).Create(&c)
+
+	return nil
+}
+
+// UpdateCall will update the entry in the database.
+func UpdateCall(call string, region string, gorm *Cached, s interface{}) error {
+	js, err := jsoniter.MarshalToString(&s)
+	if err != nil {
+		return errors.New("ggriot: error marshalling to string, " + err.Error())
+	}
+
+	CDB.Table(call+"_"+region).Model(&gorm).Update("json", js)
+
 	return nil
 }

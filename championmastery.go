@@ -1,7 +1,6 @@
 package ggriot
 
 import (
-	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -11,49 +10,50 @@ import (
 	"github.com/soowan/ggriot/models"
 )
 
+var (
+	// GetMasteryListExpire sets the time it takes for this cached call to be considered "expired"
+	GetMasteryListExpire = time.Duration(240 * time.Minute)
+
+	// GetTotalMasteryLevelExpire sets the time it takes for this cached call to be considered "expired"
+	GetTotalMasteryLevelExpire = time.Duration(240 * time.Minute)
+)
+
 // GetMasteryList will return a struct with all the summoners champions and mastery exp/level.
 func GetMasteryList(region string, summoner string) (ml *models.MasteryList, err error) {
-	if useCache == true {
-		var cc cache.MasteryList
+	if cache.Enabled == true {
+		ct := "mastery_by_summoner"
+		var cc cache.Cached
 
-		switch cache.CDB.Where("summoner_id = ?", summoner).First(&cc).Error {
+		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summoner).First(&cc).Error
+		switch er {
 		case gorm.ErrRecordNotFound:
 			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
 				return ml, err
 			}
 
-			js, er := jsoniter.Marshal(&ml)
-			if er != nil {
-				return ml, er
+			if err = cache.StoreCall(ct, region, summoner, &ml); err != nil {
+				return ml, err
 			}
-			dbe := cache.MasteryList{
-				SummonerID: (*ml)[0].PlayerID,
-				Region:     region,
-				JSON:       string(js),
-			}
-
-			cache.CDB.Create(&dbe)
 
 			return ml, err
 		case nil:
-			if time.Since(cc.UpdatedAt) > time.Duration(time.Second*5) {
-				log.Println("outdated")
+			if time.Since(cc.UpdatedAt) > GetMasteryListExpire {
+
 				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
 					return ml, err
 				}
 
-				js, er := jsoniter.Marshal(&ml)
-				if er != nil {
-					return ml, er
-				}
+				cache.UpdateCall(ct, region, &cc, &ml)
 
-				cache.CDB.Model(&cc).Update("json", string(js))
+				return ml, nil
+
 			}
 
 			jsoniter.UnmarshalFromString(cc.JSON, &ml)
+
 			return ml, nil
 		default:
-			return ml, errors.New("uh unkown error with case i suppose")
+			return ml, errors.New("ggriot: unknown error, please open github issue: " + er.Error())
 		}
 	}
 
@@ -65,6 +65,7 @@ func GetMasteryList(region string, summoner string) (ml *models.MasteryList, err
 }
 
 // GetChampionMastery will return a single champion mastery struct
+// TODO: Add special case for this, as it uses two inputs.
 func GetChampionMastery(region string, summoner string, championID string) (ml *models.MasteryList, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner+"/by-champion"+championID+apikey, &ml)
 	if err != nil {
@@ -74,10 +75,47 @@ func GetChampionMastery(region string, summoner string, championID string) (ml *
 }
 
 // GetTotalMasteryLevel gets the total mastery level.
-func GetTotalMasteryLevel(region string, summoner string) (ml *models.MasteryLevel, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml)
-	if err != nil {
-		return nil, err
+func GetTotalMasteryLevel(region string, summoner string) (ml int, err error) {
+	if cache.Enabled == true {
+		ct := "mastery_level"
+		var cc cache.Cached
+
+		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summoner).First(&cc).Error
+		switch er {
+		case gorm.ErrRecordNotFound:
+			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml); err != nil {
+				return ml, err
+			}
+
+			if err = cache.StoreCall(ct, region, summoner, &ml); err != nil {
+				return ml, err
+			}
+
+			return ml, err
+		case nil:
+			if time.Since(cc.UpdatedAt) > GetTotalMasteryLevelExpire {
+
+				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml); err != nil {
+					return ml, err
+				}
+
+				cache.UpdateCall(ct, region, &cc, &ml)
+
+				return ml, nil
+
+			}
+
+			jsoniter.UnmarshalFromString(cc.JSON, &ml)
+
+			return ml, nil
+		default:
+			return ml, errors.New("ggriot: unknown error, please open github issue: " + er.Error())
+		}
 	}
+
+	if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml); err != nil {
+		return ml, err
+	}
+
 	return ml, nil
 }

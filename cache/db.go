@@ -12,19 +12,52 @@ import (
 // CDB is the exported pointer to the opened cache server.
 var CDB *gorm.DB
 
+// Enabled this is checked to see if ggriot should call the postgres db first or skip calling cache.
+var Enabled = false
+
 // UseCache will open a connection to a postgres server that will be used as a cache server.
-func UseCache() (err error) {
-	CDB, err = gorm.Open("postgres", "postgres", "")
+func UseCache(gostring string) (err error) {
+	CDB, err = gorm.Open("postgres", "postgres", gostring)
 	if err != nil {
 		return errors.New("ggriot: error opening cache cb, " + err.Error())
 	}
 
-	if CDB.HasTable(LeagueTier{}) == false {
-		CDB.CreateTable(LeagueTier{})
+	Enabled = true
+
+	r := []string{
+		"RU",
+		"KR",
+		"BR1",
+		"OC1",
+		"JP1",
+		"NA1",
+		"EUN1",
+		"EUW1",
+		"TR1",
+		"LA1",
+		"LA2",
 	}
 
-	if CDB.HasTable(MasteryList{}) == false {
-		CDB.CreateTable(MasteryList{})
+	c := []string{
+		"mastery_by_summoner",
+		"mastery_by_champion",
+		"mastery_level",
+		"champion_rotation",
+		"league_by_queue",
+		"league_by_id",
+		"league_master_by_queue",
+		"league_challenger_by_queue",
+		"league_position_by_summoner",
+		"league_match_by_id",
+		"league_match_tl_by_id",
+	}
+
+	for rr := range r {
+		for cc := range c {
+			if CDB.Table(c[cc]+"_"+r[rr]).HasTable(&Cached{}) == false {
+				CDB.Table(c[cc] + "_" + r[rr]).CreateTable(&Cached{})
+			}
+		}
 	}
 
 	return nil

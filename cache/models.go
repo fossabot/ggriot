@@ -2,28 +2,23 @@ package cache
 
 import "github.com/jinzhu/gorm"
 
-/*
-
-This file will contain how data is stored in the database.
-Here's a outline on how it'll be stored.
-
-* General data like, IDs and Name will be stored in relevant values
-* The entire json response will be stored in the table as well.
-
-*/
-
-type LeagueTier struct {
+// Cached is the model in which we store all our cached api calls.
+// This is a low level cache so it only store the same key that you'd call the official riot API.
+// Maybe in the future this could be changed to efficiently index when two calls return the same data.
+type Cached struct {
 	gorm.Model
 
-	LeagueID string `sql:"string"`
-	Region   string `sql:"string"`
-	JSON     string `sql:"jsonb"`
+	CallKey string `sql:"string"`
+	JSON    string `sql:"jsonb"`
 }
 
-type MasteryList struct {
+// Summoner is a custom type struct.
+// This was created because there are three different calls that all get the same data.
+type Summoner struct {
 	gorm.Model
 
+	IGN        string `sql:"int"`
+	AccountID  int    `sql:"int"`
 	SummonerID int    `sql:"int"`
-	Region     string `sql:"string"`
-	JSON       string `pq:"jsonb"`
+	JSON       string `sql:"jsonb"`
 }
