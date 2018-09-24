@@ -17,7 +17,7 @@ var Enabled = false
 
 // UseCache will open a connection to a postgres server that will be used as a cache server.
 func UseCache(gostring string) (err error) {
-	CDB, err = gorm.Open("postgres", "postgres", gostring)
+	CDB, err = gorm.Open("postgres", gostring)
 	if err != nil {
 		return errors.New("ggriot: error opening cache cb, " + err.Error())
 	}
