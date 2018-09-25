@@ -15,7 +15,7 @@ func GetSummonerByAccID(region string, accountID string) (s *models.Summoner, er
 func GetSummonerBySumID(region string, summonerID string) (s *models.Summoner, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/"+summonerID, &s)
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 	return s, nil
 }
@@ -24,7 +24,7 @@ func GetSummonerBySumID(region string, summonerID string) (s *models.Summoner, e
 func GetSummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-name/"+summonerIGN, &s)
 	if err != nil {
-		return nil, err
+		return s, err
 	}
 	return s, nil
 }

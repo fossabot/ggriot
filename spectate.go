@@ -7,7 +7,7 @@ func GetActiveGame(region string, summoner string) (ag *models.ActiveGame, err e
 	err = apiRequest("https://"+region+"."+Base+BaseSpectator+"/active-games/by-summoner/"+summoner, &ag)
 
 	if err != nil {
-		return nil, err
+		return ag, err
 	}
 
 	return ag, nil
@@ -18,7 +18,7 @@ func GetFeaturedGames(region string) (fg *models.FeaturedGames, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseSpectator+"/featured-games", &fg)
 
 	if err != nil {
-		return nil, err
+		return fg, err
 	}
 
 	return fg, nil

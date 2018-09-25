@@ -12,7 +12,7 @@ func GetAllChampions(region string) (cl *models.ChampionsList, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseChampion, &cl)
 
 	if err != nil {
-		return nil, err
+		return cl, err
 	}
 
 	return cl, nil
@@ -24,8 +24,18 @@ func GetChampion(region string, championID string) (c *models.Champion, err erro
 	err = apiRequest("https://"+region+"."+Base+BaseChampion+"/"+championID, &c)
 
 	if err != nil {
-		return nil, err
+		return c, err
 	}
 
 	return c, nil
+}
+
+// GetChampionRotation is for getting the champion rotation for the week.
+func GetChampionRotation(region string) (cr *models.ChampionRotation, err error) {
+	err = apiRequest("https://"+region+"."+Base+BaseChampionR, &cr)
+
+	if err != nil {
+		return cr, err
+	}
+	return cr, nil
 }

@@ -8,7 +8,7 @@ import "github.com/soowan/ggriot/models"
 func GetServerStatus(region string) (ss *models.ServerStatus, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseStatus, &ss)
 	if err != nil {
-		return nil, err
+		return ss, err
 	}
 
 	return ss, nil

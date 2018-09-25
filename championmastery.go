@@ -69,7 +69,7 @@ func GetMasteryList(region string, summoner string) (ml *models.MasteryList, err
 func GetChampionMastery(region string, summoner string, championID string) (ml *models.MasteryList, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner+"/by-champion"+championID+apikey, &ml)
 	if err != nil {
-		return nil, err
+		return ml, err
 	}
 	return ml, nil
 }

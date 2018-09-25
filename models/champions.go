@@ -37,3 +37,10 @@ type Champion struct {
 	FreeToPlay        bool `json:"freeToPlay"`
 	ID                int  `json:"id"`
 }
+
+// ChampionRotation is used when returning the champion rotation of the week.
+type ChampionRotation struct {
+	FreeChampionIds              []int `json:"freeChampionIds"`
+	MaxNewPlayerLevel            int   `json:"maxNewPlayerLevel"`
+	FreeChampionIdsForNewPlayers []int `json:"freeChampionIdsForNewPlayers"`
+}

@@ -31,6 +31,9 @@ var (
 	// BaseChampion is the path for champion api calls.
 	BaseChampion = "/platform/v3/champions"
 
+	// BaseChampionR is he path for champion rotation api calls.
+	BaseChampionR = "/platform/v3/champion-rotations"
+
 	// BaseLeague is the path for ranked leagues api calls.
 	BaseLeague = "/league/v3"
 
