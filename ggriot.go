@@ -3,8 +3,6 @@ package ggriot
 import (
 	"net/http"
 
-	"strconv"
-
 	"time"
 
 	"github.com/json-iterator/go"
@@ -14,6 +12,8 @@ import (
 var (
 	// IgnoreLimit can be set to true to disable
 	IgnoreLimit = false
+	// WaitShortLimit can be set to true to wait for when the short rate limit is no longer reached.
+	WaitShortLimit = false
 	// ShortLimit is how many request in one second.
 	ShortLimit int64 = 20
 	// LongLimit is how many request in two minutes.
@@ -106,16 +106,16 @@ func apiRequest(request string, s interface{}) (err error) {
 	}
 
 	if CheckRateLimit() == false {
-		return errors.New("rate limit reached")
+		return ErrSoftRateLimitExceed
 	}
 
 	ggriotClient := http.Client{
-		Timeout: time.Second * 2,
+		Timeout: time.Second * 3,
 	}
 
 	req, err := http.NewRequest(http.MethodGet, request, nil)
 	if err != nil {
-		return err
+		return errors.New("ggriot: http client err: " + err.Error())
 	}
 
 	req.Header.Set("User-Agent", "ggriot")
@@ -123,25 +123,18 @@ func apiRequest(request string, s interface{}) (err error) {
 
 	res, err := ggriotClient.Do(req)
 	if err != nil {
-		return errors.New(err.Error())
+		return errors.New("ggriot: error getting response: " + err.Error())
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		var jsonError JSONError
-
-		er := jsoniter.NewDecoder(res.Body).Decode(&jsonError)
-		if er != nil {
-			return errors.New("ggriot: " + er.Error())
-		}
-
-		return errors.New("ggriot: HTTP Status: " + strconv.Itoa(jsonError.Status.StatusCode) + " - " + jsonError.Status.Message)
+		return returnErr(res)
 	}
 
 	err = jsoniter.NewDecoder(res.Body).Decode(&s)
 	if err != nil {
-		return
+		return errors.New("ggriot: decoding json result: " + err.Error())
 	}
 	return
 }
