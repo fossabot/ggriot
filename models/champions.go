@@ -16,28 +16,6 @@ type MasteryList []struct {
 // MasteryLevel is the total champion mastery.
 type MasteryLevel int
 
-// ChampionsList is used when returning all the current champions.
-type ChampionsList struct {
-	Champions []struct {
-		RankedPlayEnabled bool `json:"rankedPlayEnabled"`
-		BotEnabled        bool `json:"botEnabled"`
-		BotMmEnabled      bool `json:"botMmEnabled"`
-		Active            bool `json:"active"`
-		FreeToPlay        bool `json:"freeToPlay"`
-		ID                int  `json:"id"`
-	} `json:"champions"`
-}
-
-// Champion is used when returning a single champion.
-type Champion struct {
-	RankedPlayEnabled bool `json:"rankedPlayEnabled"`
-	BotEnabled        bool `json:"botEnabled"`
-	BotMmEnabled      bool `json:"botMmEnabled"`
-	Active            bool `json:"active"`
-	FreeToPlay        bool `json:"freeToPlay"`
-	ID                int  `json:"id"`
-}
-
 // ChampionRotation is used when returning the champion rotation of the week.
 type ChampionRotation struct {
 	FreeChampionIds              []int `json:"freeChampionIds"`
