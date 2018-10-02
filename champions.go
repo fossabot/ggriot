@@ -2,9 +2,9 @@ package ggriot
 
 import "github.com/soowan/ggriot/models"
 
-// GetChampionRotation is for getting the champion rotation for the week.
+// ChampionRotation is for getting the champion rotation for the week.
 // This is the new api endpoint added. Subject to change.
-func GetChampionRotation(region string) (cr *models.ChampionRotation, err error) {
+func ChampionRotation(region string) (cr *models.ChampionRotation, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseChampionR, &cr)
 
 	if err != nil {

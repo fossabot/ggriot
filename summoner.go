@@ -2,8 +2,8 @@ package ggriot
 
 import "github.com/soowan/ggriot/models"
 
-// GetSummonerByAccID will get summoner information using Account ID
-func GetSummonerByAccID(region string, accountID string) (s *models.Summoner, err error) {
+// SummonerByAccID will get summoner information using Account ID
+func SummonerByAccID(region string, accountID string) (s *models.Summoner, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-account/"+accountID, &s)
 	if err != nil {
 		return nil, err
@@ -11,8 +11,8 @@ func GetSummonerByAccID(region string, accountID string) (s *models.Summoner, er
 	return s, nil
 }
 
-// GetSummonerBySumID will get summoner information using Summoner ID
-func GetSummonerBySumID(region string, summonerID string) (s *models.Summoner, err error) {
+// SummonerBySumID will get summoner information using Summoner ID
+func SummonerBySumID(region string, summonerID string) (s *models.Summoner, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/"+summonerID, &s)
 	if err != nil {
 		return s, err
@@ -20,8 +20,8 @@ func GetSummonerBySumID(region string, summonerID string) (s *models.Summoner, e
 	return s, nil
 }
 
-// GetSummonerByIGN will get summoner information using IGN
-func GetSummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err error) {
+// SummonerByIGN will get summoner information using IGN
+func SummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-name/"+summonerIGN, &s)
 	if err != nil {
 		return s, err

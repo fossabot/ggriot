@@ -18,8 +18,8 @@ var (
 	GetTotalMasteryLevelExpire = time.Duration(240 * time.Minute)
 )
 
-// GetMasteryList will return a struct with all the summoners champions and mastery exp/level.
-func GetMasteryList(region string, summoner string) (ml *models.MasteryList, err error) {
+// MasteryList will return a struct with all the summoners champions and mastery exp/level.
+func MasteryList(region string, summoner string) (ml *models.MasteryList, err error) {
 	if cache.Enabled == true {
 		ct := "mastery_by_summoner"
 		var cc cache.Cached
@@ -64,9 +64,9 @@ func GetMasteryList(region string, summoner string) (ml *models.MasteryList, err
 	return ml, nil
 }
 
-// GetChampionMastery will return a single champion mastery struct
+// ChampionMastery will return a single champion mastery struct
 // TODO: Add special case for this, as it uses two inputs.
-func GetChampionMastery(region string, summoner string, championID string) (ml *models.MasteryList, err error) {
+func ChampionMastery(region string, summoner string, championID string) (ml *models.MasteryList, err error) {
 	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner+"/by-champion"+championID+apikey, &ml)
 	if err != nil {
 		return ml, err
@@ -74,8 +74,8 @@ func GetChampionMastery(region string, summoner string, championID string) (ml *
 	return ml, nil
 }
 
-// GetTotalMasteryLevel gets the total mastery level.
-func GetTotalMasteryLevel(region string, summoner string) (ml int, err error) {
+// TotalMasteryLevel gets the total mastery level.
+func TotalMasteryLevel(region string, summoner string) (ml int, err error) {
 	if cache.Enabled == true {
 		ct := "mastery_level"
 		var cc cache.Cached

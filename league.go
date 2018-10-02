@@ -26,9 +26,9 @@ var (
 	ExpireGetPlayerPosition = time.Duration(15 * time.Minute)
 )
 
-// GetChallengers will return all the challengers in the requested queue.
+// Challengers will return all the challengers in the requested queue.
 // Valid queues are, Ranked5s(RANKED_SOLO_5x5), Flex3s(RANKED_FLEX_TT), and Flex5s(RANKED_FLEX_SR)
-func GetChallengers(region string, mode string) (lr *models.LeagueRoster, err error) {
+func Challengers(region string, mode string) (lr *models.LeagueRoster, err error) {
 	if cache.Enabled == true {
 		ct := "league_challenger_by_queue"
 		var cc cache.Cached
@@ -72,8 +72,8 @@ func GetChallengers(region string, mode string) (lr *models.LeagueRoster, err er
 	return lr, nil
 }
 
-// GetMasters returns the roster of all the players in the Masters tier for requested queue.
-func GetMasters(region string, mode string) (lr *models.LeagueRoster, err error) {
+// Masters returns the roster of all the players in the Masters tier for requested queue.
+func Masters(region string, mode string) (lr *models.LeagueRoster, err error) {
 	if cache.Enabled == true {
 		ct := "league_master_by_queue"
 		var cc cache.Cached
@@ -117,9 +117,9 @@ func GetMasters(region string, mode string) (lr *models.LeagueRoster, err error)
 	return lr, nil
 }
 
-// GetLeague will return the roster of the league requested, via UUID.
+// League will return the roster of the league requested, via UUID.
 // You can and will get blocked from this call if you provide invalid UUIDs
-func GetLeague(region string, leagueUUID string) (lr *models.LeagueRoster, err error) {
+func League(region string, leagueUUID string) (lr *models.LeagueRoster, err error) {
 	if cache.Enabled == true {
 		ct := "league_by_id"
 		var cc cache.Cached
@@ -164,8 +164,8 @@ func GetLeague(region string, leagueUUID string) (lr *models.LeagueRoster, err e
 	return lr, nil
 }
 
-// GetPlayerPosition will return the requested players league position in each of the three ranked queues.
-func GetPlayerPosition(region string, summonerID string) (lp *models.LeaguePosition, err error) {
+// PlayerPosition will return the requested players league position in each of the three ranked queues.
+func PlayerPosition(region string, summonerID string) (lp *models.LeaguePosition, err error) {
 	if cache.Enabled == true {
 		ct := "league_position_by_summoner"
 		var cc cache.Cached
