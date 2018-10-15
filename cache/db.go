@@ -24,6 +24,8 @@ func UseCache(gostring string) (err error) {
 
 	Enabled = true
 
+	// This will create all the tables needed, I'm not sure how to make this better yet, but I know it probably
+	// needs to be changed.
 	r := []string{
 		"RU",
 		"KR",
@@ -50,6 +52,7 @@ func UseCache(gostring string) (err error) {
 		"league_position_by_summoner",
 		"league_match_by_id",
 		"league_match_tl_by_id",
+		"mmr",
 	}
 
 	for rr := range r {

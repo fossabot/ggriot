@@ -113,7 +113,7 @@ func apiRequest(request string, s interface{}) (err error) {
 	}
 
 	ggriotClient := http.Client{
-		Timeout: time.Second * 3,
+		Timeout: time.Second * 5,
 	}
 
 	req, err := http.NewRequest(http.MethodGet, request, nil)

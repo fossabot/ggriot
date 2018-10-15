@@ -29,7 +29,6 @@ func Match(region string, matchID string) (md *models.MatchData, err error) {
 			return md, err
 		case nil:
 			jsoniter.UnmarshalFromString(cc.JSON, &md)
-
 			return md, nil
 		default:
 			return md, errors.New("ggriot: unknown error, please open github issue: " + er.Error())
