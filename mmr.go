@@ -35,14 +35,14 @@ func MMR(region string, summoner string) (mmr *models.MMR, err error) {
 		ct := "mmr"
 		var cc cache.Cached
 
-		er := cache.CDB.Table(ct+"_"+rrr).Where("call_key = ?", summoner).First(&cc).Error
+		er := cache.CDB.Table(ct+"_"+rrr).Where("call_key = ?", s.Name).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
 			if err = apiRequest("https://"+region+".whatismymmr.com/api/v1/summoner?name="+s.Name, &mmr); err != nil {
 				return mmr, err
 			}
 
-			if err = cache.StoreCall(ct, rrr, summoner, &mmr); err != nil {
+			if err = cache.StoreCall(ct, rrr, s.Name, &mmr); err != nil {
 				return mmr, err
 			}
 
