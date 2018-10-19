@@ -5,7 +5,7 @@ type Summoner struct {
 	ProfileIconID int    `json:"profileIconId"`
 	Name          string `json:"name"`
 	SummonerLevel int    `json:"summonerLevel"`
-	AccountID     int    `json:"accountId"`
-	ID            int    `json:"id"`
+	AccountID     int64  `json:"accountId"`
+	ID            int64  `json:"id"`
 	RevisionDate  int64  `json:"revisionDate"`
 }

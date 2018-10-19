@@ -6,7 +6,7 @@ type MasteryList []struct {
 	ChestGranted                 bool  `json:"chestGranted"`
 	ChampionPoints               int   `json:"championPoints"`
 	ChampionPointsSinceLastLevel int   `json:"championPointsSinceLastLevel"`
-	PlayerID                     int   `json:"playerId"`
+	PlayerID                     int64 `json:"playerId"`
 	ChampionPointsUntilNextLevel int   `json:"championPointsUntilNextLevel"`
 	TokensEarned                 int   `json:"tokensEarned"`
 	ChampionID                   int   `json:"championId"`
