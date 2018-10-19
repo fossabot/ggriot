@@ -2,6 +2,7 @@ package ggriot
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/soowan/ggriot/models"
@@ -165,7 +166,8 @@ func League(region string, leagueUUID string) (lr *models.LeagueRoster, err erro
 }
 
 // PlayerPosition will return the requested players league position in each of the three ranked queues.
-func PlayerPosition(region string, summonerID string) (lp *models.LeaguePosition, err error) {
+func PlayerPosition(region string, summonerID int64) (lp *models.LeaguePosition, err error) {
+	summID := strconv.FormatInt(summonerID, 10)
 	if cache.Enabled == true {
 		ct := "league_position_by_summoner"
 		var cc cache.Cached
@@ -173,11 +175,11 @@ func PlayerPosition(region string, summonerID string) (lp *models.LeaguePosition
 		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summonerID).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
-			if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerID, &lp); err != nil {
+			if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summID, &lp); err != nil {
 				return lp, err
 			}
 
-			if err = cache.StoreCall(ct, region, summonerID, &lp); err != nil {
+			if err = cache.StoreCall(ct, region, summID, &lp); err != nil {
 				return lp, err
 			}
 
@@ -185,7 +187,7 @@ func PlayerPosition(region string, summonerID string) (lp *models.LeaguePosition
 		case nil:
 			if time.Since(cc.UpdatedAt) > ExpireGetChallengers {
 
-				if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerID, &lp); err != nil {
+				if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summID, &lp); err != nil {
 					return lp, err
 				}
 
@@ -202,7 +204,7 @@ func PlayerPosition(region string, summonerID string) (lp *models.LeaguePosition
 		}
 	}
 
-	if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerID, &lp); err != nil {
+	if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summID, &lp); err != nil {
 		return lp, err
 	}
 

@@ -14,7 +14,7 @@ func TestActiveGame(t *testing.T) {
 }
 
 func TestGetActiveGame(t *testing.T) {
-	e, err := MasteryList(NA, "21669611")
+	e, err := MasteryList(NA, 21669611)
 	if err != nil {
 		t.Error(err)
 	}
@@ -23,7 +23,7 @@ func TestGetActiveGame(t *testing.T) {
 }
 
 func TestGetTotalMasteryLevel(t *testing.T) {
-	e, err := TotalMasteryLevel(NA, "21669611")
+	e, err := TotalMasteryLevel(NA, 21669611)
 	if err != nil {
 		t.Error(err)
 	}
@@ -50,7 +50,7 @@ func TestGetMasters(t *testing.T) {
 }
 
 func TestGetPlayerPosition(t *testing.T) {
-	e, err := PlayerPosition(NA, "21669611")
+	e, err := PlayerPosition(NA, 21669611)
 	if err != nil {
 		t.Error(err)
 	}
@@ -59,7 +59,7 @@ func TestGetPlayerPosition(t *testing.T) {
 }
 
 func TestGetMatch(t *testing.T) {
-	e, err := Match(NA, "2872782472")
+	e, err := Match(NA, 2872782472)
 	if err != nil {
 		t.Error(err)
 	}
@@ -68,7 +68,7 @@ func TestGetMatch(t *testing.T) {
 }
 
 func TestGetMatchTimeline(t *testing.T) {
-	e, err := MatchTimeline(NA, "2872782472")
+	e, err := MatchTimeline(NA, 2872782472)
 	if err != nil {
 		t.Error(err)
 	}

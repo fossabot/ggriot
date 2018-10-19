@@ -1,10 +1,15 @@
 package ggriot
 
-import "github.com/soowan/ggriot/models"
+import (
+	"strconv"
+
+	"github.com/soowan/ggriot/models"
+)
 
 // ActiveGame will get the active game from the supplied id.
-func ActiveGame(region string, summoner string) (ag *models.ActiveGame, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseSpectator+"/active-games/by-summoner/"+summoner, &ag)
+func ActiveGame(region string, summonerID int64) (ag *models.ActiveGame, err error) {
+	summID := strconv.FormatInt(summonerID, 10)
+	err = apiRequest("https://"+region+"."+Base+BaseSpectator+"/active-games/by-summoner/"+summID, &ag)
 
 	if err != nil {
 		return ag, err

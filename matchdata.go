@@ -2,6 +2,7 @@ package ggriot
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 	"github.com/json-iterator/go"
@@ -10,19 +11,20 @@ import (
 )
 
 // Match will return the data for the match ID requested.
-func Match(region string, matchID string) (md *models.MatchData, err error) {
+func Match(region string, matchID int64) (md *models.MatchData, err error) {
+	mtID := strconv.FormatInt(matchID, 10)
 	if cache.Enabled == true {
 		ct := "league_match_by_id"
 		var cc cache.Cached
 
-		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", matchID).First(&cc).Error
+		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", mtID).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
-			if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/matches/"+matchID, &md); err != nil {
+			if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/matches/"+mtID, &md); err != nil {
 				return md, err
 			}
 
-			if err = cache.StoreCall(ct, region, matchID, &md); err != nil {
+			if err = cache.StoreCall(ct, region, mtID, &md); err != nil {
 				return md, err
 			}
 
@@ -35,7 +37,7 @@ func Match(region string, matchID string) (md *models.MatchData, err error) {
 		}
 	}
 
-	if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/matches/"+matchID, &md); err != nil {
+	if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/matches/"+mtID, &md); err != nil {
 		return md, err
 	}
 
@@ -47,8 +49,9 @@ func Match(region string, matchID string) (md *models.MatchData, err error) {
 // In order to get stats you have to request every game separately.
 // TODO: Add ability to fully use the options when doing a matches call.
 // TODO: Figure out if/how this can/should be cached.
-func MatchHistory(region string, accountID string) (ms *models.MatchHistory, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseMatch+"/matchlists/by-account/"+accountID, &ms)
+func MatchHistory(region string, accountID int64) (ms *models.MatchHistory, err error) {
+	accID := strconv.FormatInt(accountID, 10)
+	err = apiRequest("https://"+region+"."+Base+BaseMatch+"/matchlists/by-account/"+accID, &ms)
 	if err != nil {
 		return nil, err
 	}
@@ -58,19 +61,20 @@ func MatchHistory(region string, accountID string) (ms *models.MatchHistory, err
 
 // MatchTimeline will return the full timeline of the requested match ID.
 // This is a pretty big struct that is returned so make sure you understand how to use this data first.
-func MatchTimeline(region string, matchID string) (mt *models.MatchTimeline, err error) {
+func MatchTimeline(region string, matchID int64) (mt *models.MatchTimeline, err error) {
+	mtID := strconv.FormatInt(matchID, 10)
 	if cache.Enabled == true {
 		ct := "league_match_tl_by_id"
 		var cc cache.Cached
 
-		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", matchID).First(&cc).Error
+		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", mtID).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
-			if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/timelines/by-match/"+matchID, &mt); err != nil {
+			if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/timelines/by-match/"+mtID, &mt); err != nil {
 				return mt, err
 			}
 
-			if err = cache.StoreCall(ct, region, matchID, &mt); err != nil {
+			if err = cache.StoreCall(ct, region, mtID, &mt); err != nil {
 				return mt, err
 			}
 
@@ -84,7 +88,7 @@ func MatchTimeline(region string, matchID string) (mt *models.MatchTimeline, err
 		}
 	}
 
-	if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/timelines/by-match/"+matchID, &mt); err != nil {
+	if err = apiRequest("https://"+region+"."+Base+BaseMatch+"/timelines/by-match/"+mtID, &mt); err != nil {
 		return mt, err
 	}
 

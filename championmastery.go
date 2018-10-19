@@ -1,6 +1,7 @@
 package ggriot
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -19,19 +20,20 @@ var (
 )
 
 // MasteryList will return a struct with all the summoners champions and mastery exp/level.
-func MasteryList(region string, summoner string) (ml *models.MasteryList, err error) {
+func MasteryList(region string, summonerID int64) (ml *models.MasteryList, err error) {
+	summID := strconv.FormatInt(summonerID, 10)
 	if cache.Enabled == true {
 		ct := "mastery_by_summoner"
 		var cc cache.Cached
 
-		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summoner).First(&cc).Error
+		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summID).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
-			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
+			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summID, &ml); err != nil {
 				return ml, err
 			}
 
-			if err = cache.StoreCall(ct, region, summoner, &ml); err != nil {
+			if err = cache.StoreCall(ct, region, summID, &ml); err != nil {
 				return ml, err
 			}
 
@@ -39,7 +41,7 @@ func MasteryList(region string, summoner string) (ml *models.MasteryList, err er
 		case nil:
 			if time.Since(cc.UpdatedAt) > GetMasteryListExpire {
 
-				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
+				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summID, &ml); err != nil {
 					return ml, err
 				}
 
@@ -57,7 +59,7 @@ func MasteryList(region string, summoner string) (ml *models.MasteryList, err er
 		}
 	}
 
-	if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner, &ml); err != nil {
+	if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summID, &ml); err != nil {
 		return ml, err
 	}
 
@@ -66,8 +68,10 @@ func MasteryList(region string, summoner string) (ml *models.MasteryList, err er
 
 // ChampionMastery will return a single champion mastery struct
 // TODO: Add special case for this, as it uses two inputs.
-func ChampionMastery(region string, summoner string, championID string) (ml *models.MasteryList, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summoner+"/by-champion"+championID+apikey, &ml)
+func ChampionMastery(region string, summonerID int64, championID int) (ml *models.MasteryList, err error) {
+	summID := strconv.FormatInt(summonerID, 10)
+	chamID := strconv.Itoa(championID)
+	err = apiRequest("https://"+region+"."+Base+BaseMastery+"/champion-masteries/by-summoner/"+summID+"/by-champion"+chamID+apikey, &ml)
 	if err != nil {
 		return ml, err
 	}
@@ -75,19 +79,20 @@ func ChampionMastery(region string, summoner string, championID string) (ml *mod
 }
 
 // TotalMasteryLevel gets the total mastery level.
-func TotalMasteryLevel(region string, summoner string) (ml int, err error) {
+func TotalMasteryLevel(region string, summonerID int64) (ml int, err error) {
+	summID := strconv.FormatInt(summonerID, 10)
 	if cache.Enabled == true {
 		ct := "mastery_level"
 		var cc cache.Cached
 
-		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summoner).First(&cc).Error
+		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summID).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
-			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml); err != nil {
+			if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summID, &ml); err != nil {
 				return ml, err
 			}
 
-			if err = cache.StoreCall(ct, region, summoner, &ml); err != nil {
+			if err = cache.StoreCall(ct, region, summID, &ml); err != nil {
 				return ml, err
 			}
 
@@ -95,7 +100,7 @@ func TotalMasteryLevel(region string, summoner string) (ml int, err error) {
 		case nil:
 			if time.Since(cc.UpdatedAt) > GetTotalMasteryLevelExpire {
 
-				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml); err != nil {
+				if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summID, &ml); err != nil {
 					return ml, err
 				}
 
@@ -113,7 +118,7 @@ func TotalMasteryLevel(region string, summoner string) (ml int, err error) {
 		}
 	}
 
-	if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summoner, &ml); err != nil {
+	if err = apiRequest("https://"+region+"."+Base+BaseMastery+"/scores/by-summoner/"+summID, &ml); err != nil {
 		return ml, err
 	}
 

@@ -1,10 +1,15 @@
 package ggriot
 
-import "github.com/soowan/ggriot/models"
+import (
+	"strconv"
+
+	"github.com/soowan/ggriot/models"
+)
 
 // SummonerByAccID will get summoner information using Account ID
-func SummonerByAccID(region string, accountID string) (s *models.Summoner, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-account/"+accountID, &s)
+func SummonerByAccID(region string, accountID int64) (s *models.Summoner, err error) {
+	accID := strconv.FormatInt(accountID, 10)
+	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-account/"+accID, &s)
 	if err != nil {
 		return nil, err
 	}
@@ -12,8 +17,9 @@ func SummonerByAccID(region string, accountID string) (s *models.Summoner, err e
 }
 
 // SummonerBySumID will get summoner information using Summoner ID
-func SummonerBySumID(region string, summonerID string) (s *models.Summoner, err error) {
-	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/"+summonerID, &s)
+func SummonerBySumID(region string, summonerID int64) (s *models.Summoner, err error) {
+	sumID := strconv.FormatInt(summonerID, 10)
+	err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/"+sumID, &s)
 	if err != nil {
 		return s, err
 	}
