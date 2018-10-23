@@ -3,6 +3,7 @@ package ggriot
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -39,6 +40,8 @@ func SummonerBySumID(region string, summonerID int64) (s *models.Summoner, err e
 
 // SummonerByIGN will get summoner information using IGN
 func SummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err error) {
+	summonerIGN = strings.ToLower(summonerIGN)
+	summonerIGN = strings.Replace(summonerIGN, " ", "", -1)
 	if cache.Enabled == true {
 		ct := "summoner_by_ign"
 		var cc cache.Cached
