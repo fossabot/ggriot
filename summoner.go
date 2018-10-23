@@ -46,7 +46,7 @@ func SummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err e
 		er := cache.CDB.Table(ct+"_"+region).Where("call_key = ?", summonerIGN).First(&cc).Error
 		switch er {
 		case gorm.ErrRecordNotFound:
-			if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerIGN, &s); err != nil {
+			if err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-name/"+summonerIGN, &s); err != nil {
 				return s, err
 			}
 
@@ -58,7 +58,7 @@ func SummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err e
 		case nil:
 			if time.Since(cc.UpdatedAt) > ExpireGetPlayerPosition {
 
-				if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerIGN, &s); err != nil {
+				if err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-name/"+summonerIGN, &s); err != nil {
 					return s, err
 				}
 
@@ -75,7 +75,7 @@ func SummonerByIGN(region string, summonerIGN string) (s *models.Summoner, err e
 		}
 	}
 
-	if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summonerIGN, &s); err != nil {
+	if err = apiRequest("https://"+region+"."+Base+BaseSummoner+"/by-name/"+summonerIGN, &s); err != nil {
 		return s, err
 	}
 

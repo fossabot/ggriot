@@ -75,3 +75,12 @@ func TestGetMatchTimeline(t *testing.T) {
 
 	fmt.Println(e.Frames[10].ParticipantFrames.Num1.CurrentGold)
 }
+
+func TestSummonerByIGN(t *testing.T) {
+	e, err := SummonerByIGN(NA, "Soowan")
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Println(e.ID)
+}
