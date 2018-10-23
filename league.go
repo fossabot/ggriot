@@ -92,7 +92,7 @@ func Masters(region string, mode string) (lr *models.LeagueRoster, err error) {
 
 			return lr, err
 		case nil:
-			if time.Since(cc.UpdatedAt) > ExpireGetChallengers {
+			if time.Since(cc.UpdatedAt) > ExpireGetMasters {
 
 				if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/masterleagues/by-queue/"+mode, &lr); err != nil {
 					return lr, err
@@ -185,7 +185,7 @@ func PlayerPosition(region string, summonerID int64) (lp *models.LeaguePosition,
 
 			return lp, err
 		case nil:
-			if time.Since(cc.UpdatedAt) > ExpireGetChallengers {
+			if time.Since(cc.UpdatedAt) > ExpireGetPlayerPosition {
 
 				if err = apiRequest("https://"+region+"."+Base+BaseLeague+"/positions/by-summoner/"+summID, &lp); err != nil {
 					return lp, err

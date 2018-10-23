@@ -52,6 +52,7 @@ func UseCache(gostring string) (err error) {
 		"league_position_by_summoner",
 		"league_match_by_id",
 		"league_match_tl_by_id",
+		"summoner_by_ign",
 		"mmr",
 	}
 
